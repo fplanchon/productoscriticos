@@ -74,6 +74,12 @@ class AsociarController extends Controller
 
     }
 
+    public function loginauto($id_usuario, $id_fase){
+        session(['id_usuario' => $id_usuario]);
+        session(['id_fase' => $id_fase]);
+        return redirect()->route('formularioAsociar');
+    }
+
     /****** */
     private function customUtf8Encode(&$Data){
         array_walk_recursive($Data, function(&$value, $key){
