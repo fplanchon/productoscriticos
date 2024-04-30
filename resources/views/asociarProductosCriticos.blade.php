@@ -39,7 +39,7 @@
                 </div>
                 <div class="row formularioAsociar">
                     <div class="col-12">
-                        </br>
+                        
                         <label for="id_hc" class="form-label">Seleccione una unidad:</label>
                         <select class="form-select" id="id_hc">
                             @forelse ($Unidades as $Unidad)
@@ -58,15 +58,32 @@
                         <br>
                     </div>
                 </div>
-                <div class="row">
+                <div class="row mb-3">
                     <div class="col-12" id="readerContainer"></div>
-                    <div class="col-12" >
-                        <br>
-                        <label for="codigoProducto" class="form-label">Código producto:</label>
-                        <input type="text" class="form-control" disabled="disabled" id="codigoProducto" >
+                </div>
+                <form>
+                    <div class="row mb-3">
+                        <label for="codigoProducto" class="col-3 col-form-label">Código producto:</label>
+                        <div class="col-9">
+                            <input type="text" class="form-control" disabled="disabled" id="codigoProducto">
+                        </div>
                     </div>
-                    <div class="col-12" >
-                        <p class="text-danger" id="textError"></p>
+                    <div class="row mb-3">
+                        <label for="nroSerie" class="col-3 col-form-label">Nro Serie:</label>
+                        <div class="col-9">
+                            <input type="text" class="form-control" disabled="disabled" id="nroSerie">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <label for="nroLote" class="col-3 col-form-label">Nro Lote:</label>
+                        <div class="col-9">
+                            <input type="text" class="form-control" disabled="disabled" id="nroLote">
+                        </div>
+                    </div>
+                    <div class="row mb-3">                    
+                        <div class="col-12" >
+                            <p class="text-danger" id="textError"></p>
+                        </div>
                     </div>
                 </div>
 
@@ -164,7 +181,7 @@
                             }
 
                             if(qrObj.datos.NROLOTE == ''){
-                                throw new Error('No se indico NRO LOTE')
+                                //throw new Error('No se indico NRO LOTE')
                             }
 
 
@@ -173,6 +190,8 @@
                         }
 
                         $('#codigoProducto').val(qrObj.datos.CODIGOPROVEEDOR);
+                        $('#nroSerie').val(qrObj.datos.NROSERIE);
+                        $('#nroLote').val(qrObj.datos.NROLOTE);
                         //alert('SI! '+qrObj.datos.CODIGOPROVEEDOR+' - '+ qrObj.datos.NROSERIE+' - '+qrObj.datos.NROLOTE);
                     }
                 } catch (error) {
