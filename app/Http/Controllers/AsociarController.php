@@ -75,7 +75,7 @@ class AsociarController extends Controller
 
     }//peticionlogin
 
-    public function loginauto($id_usuario, $id_fase, $id_hc){
+    public function loginauto($id_usuario, $id_fase, $id_hc = null){
         session(['id_usuario' => $id_usuario]);
         session(['id_fase' => $id_fase]);
         session(['id_hc' => $id_hc]);
