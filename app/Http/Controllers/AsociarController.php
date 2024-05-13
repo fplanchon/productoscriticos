@@ -10,7 +10,7 @@ class AsociarController extends Controller
     public function login(Request $request){
         $request->session()->forget(['id_usuario', 'id_fase']);
         return view('login');
-    }
+    }//login
 
     public function formularioAsociar(Request $request){
         //$id_usuario = $request->input('id_usuario');
@@ -21,14 +21,15 @@ class AsociarController extends Controller
 
         $id_usuario = session('id_usuario');
         $id_fase    = session('id_fase');
+        $id_hc     = session('id_hc');
 
         $ConPC = new ConsultasProductoCritico();
         $Unidades = $ConPC->unidadesEnMiFase($id_fase,1,'');
         //$Producto = $ConPC->productoPorCodProdProv('AT650CIP');
         //$Unidades = json_encode($Unidades,JSON_UNESCAPED_SLASHES);
 
-        return view('asociarProductosCriticos',compact('id_usuario','Unidades'));
-    }
+        return view('asociarProductosCriticos',compact('id_usuario','Unidades','id_hc'));
+    }//formularioAsociar
 
     public function asociarProductoCritico(Request $request){
         $ConPC = new ConsultasProductoCritico();
@@ -45,7 +46,7 @@ class AsociarController extends Controller
         $respuesta = $Res;
 
         return response()->json($respuesta);
-    }
+    }//asociarProductoCritico
 
 
     public function buscarFasesUsuario(Request $request){
@@ -55,7 +56,7 @@ class AsociarController extends Controller
         $this->customUtf8Encode($Fases);
 
         return response()->json($Fases);
-    }
+    }//buscarFasesUsuario
 
     public function peticionlogin(Request $request){
         $ConPC = new ConsultasProductoCritico();
@@ -72,13 +73,14 @@ class AsociarController extends Controller
             return redirect()->route('login');
         }
 
-    }
+    }//peticionlogin
 
-    public function loginauto($id_usuario, $id_fase){
+    public function loginauto($id_usuario, $id_fase, $id_hc){
         session(['id_usuario' => $id_usuario]);
         session(['id_fase' => $id_fase]);
+        session(['id_hc' => $id_hc]);
         return redirect()->route('formularioAsociar');
-    }
+    }//loginauto
 
     /****** */
     private function customUtf8Encode(&$Data){
@@ -88,5 +90,5 @@ class AsociarController extends Controller
             }
         });
 
-    }
+    }//customUtf8Encode
 }

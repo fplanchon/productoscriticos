@@ -39,9 +39,9 @@
                 </div>
                 <div class="row formularioAsociar">
                     <div class="col-12">
-                        
+
                         <label for="id_hc" class="form-label">Seleccione una unidad:</label>
-                        <select class="form-select" id="id_hc">
+                        <select class="form-select" id="id_hc" inicializar="{{$id_hc}}">
                             @forelse ($Unidades as $Unidad)
                                 <option value="{{$Unidad->ID_HOJA_CARACTERISTICAS}}" >{{ $Unidad->NRO_VIN }}</option>
                             @empty
@@ -80,7 +80,7 @@
                             <input type="text" class="form-control" disabled="disabled" id="nroLote">
                         </div>
                     </div>
-                    <div class="row mb-3">                    
+                    <div class="row mb-3">
                         <div class="col-12" >
                             <p class="text-danger" id="textError"></p>
                         </div>
@@ -210,6 +210,8 @@
 
             const iniciarScanner = ()=>{
                 //$('.formularioAsociar').fadeOut();
+                let id_hc_iniciar = $('#id_hc').attr('inicializar');
+                $('#id_hc').val(id_hc_iniciar);
                 $('#readerContainer').html('<div  id="reader"></div>')
                 const scanner = new Html5QrcodeScanner('reader', {
                         // Scanner will be initialized in DOM inside element with id of 'reader'
