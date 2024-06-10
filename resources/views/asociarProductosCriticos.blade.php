@@ -212,7 +212,8 @@
                 //$('.formularioAsociar').fadeOut();
                 let id_hc_iniciar = $('#id_hc').attr('inicializar');
                 $('#id_hc').val(id_hc_iniciar);
-                $('#readerContainer').html('<div  id="reader"></div>')
+                $('#readerContainer').html('<div  id="reader"></div>');
+
                 const scanner = new Html5QrcodeScanner('reader', {
                         // Scanner will be initialized in DOM inside element with id of 'reader'
                         qrbox: {
@@ -220,6 +221,7 @@
                             height: 250,
                         },  // Sets dimensions of scanning box (set relative to reader element width)
                         fps: 20, // Frames per second to attempt a scan
+                        showTorchButtonIfSupported:true
                     }, false);
 
 
@@ -248,6 +250,11 @@
                        // console.error(err);
                         // Prints any errors to the console
                     }
+
+                    $('html, body').animate({
+                        scrollTop: $("#reader__dashboard_section_csr").offset().top
+                    }, 1500);
+
                 }//iniciarScanner
 
 
