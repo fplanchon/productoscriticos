@@ -75,10 +75,16 @@ class AsociarController extends Controller
 
     }//peticionlogin
 
-    public function loginauto($id_usuario, $id_fase, $id_hc = null){
+    public function loginauto($id_usuario, $id_fase, $id_hc = null, $accion=null){
         session(['id_usuario' => $id_usuario]);
         session(['id_fase' => $id_fase]);
         session(['id_hc' => $id_hc]);
+        session(['accion' => $accion]);
+
+        if($id_hc == 'CAPACHOS'){
+            return redirect()->route('leerCapacho');
+        }
+
         return redirect()->route('formularioAsociar');
     }//loginauto
 
