@@ -50,18 +50,8 @@
                             <p class="text-danger" id="textError"></p>
                         </div>
                     </div>
-
+                <input type="hidden" name="id_capacho" id="id_capacho" >
                 <table class="table table-striped">
-                    <thead class="">
-                        <tr>
-                            <th >
-                                Propiedad
-                            </th>
-                            <th >
-                                Valor
-                            </th>
-                        </tr>
-                    </thead>
                     <tbody>
                         <tr >
                             <th >
@@ -87,14 +77,34 @@
                                 <span class="spanDatoCapacho" id="cantidad"></span>
                             </td>
                         </tr>
+                        <!--<tr >
+                            <th >
+                                Fase
+                            </th>
+                            <td >
+                                <span class="spanDatoCapacho" id="fase_destino"></span>
+                            </td>
+                        </tr>-->
                     </tbody>
                 </table>
-                <form id="formActividadCapacho" onsubmit="ejecutarActividad(this); return false">
+                <table class="table table-striped"  id="tablaPosiciones" style="text-align: center">
+                    <thead >
+                        <tr>
+                            <th >
+                                Elegir Posicion
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+
+                <!--<form id="formActividadCapacho" onsubmit="ejecutarActividad(this); return false">
                     <input type="hidden" name="id_capacho" id="id_capacho" >
                     <div class="flex justify-center mt-4">
                         @switch($accion)
                             @case(2)
-                            <button type="submit" class="btn btn-success w-100"  id="btnAccion" class="btn btn-success hidden">Enviar este capacho a la Fase</button>
+                            <button type="submit" class="btn btn-success w-100"  id="btnAccion" class="btn btn-success hidden">Llenar este capacho</button>
                             @break
 
                             @case(3)
@@ -105,12 +115,12 @@
                         @endswitch
 
                     </div>
-                </form>
+                </form>-->
             </div>
         <!--</div>-->
 
         <script>
-              let qrObj;
+        let qrObj;
         let Accion = {{ $accion }};
         document.addEventListener('DOMContentLoaded', function() {
             iniciarScanner();
@@ -137,13 +147,14 @@
                     throw new Error('Datos incompletos')
                 }
 
-                buscarCapacho(qrObj.id_capacho);
 
-                $('#nro_capacho').html(qrObj.nro_capacho);
-                $('#desc_producto').html(qrObj.desc_producto);
-                $('#cantidad').html(qrObj.cantidad);
+                //$('#nro_capacho').html(qrObj.nro_capacho);
+                $('#desc_producto').html('-');
+                $('#cantidad').html('-');
+                //$('#fase_destino').html('-');
                 $('#btnAccion').hide();
 
+                buscarCapacho(qrObj.id_capacho);
 
 
             } catch (error) {
@@ -187,6 +198,11 @@
                     console.log('response', response);
                     if(response.success){
                         $('#id_capacho').val(response.data.Capacho.ID_CAPACHO);
+                        $('#nro_capacho').html(response.data.Capacho.NRO_CAPACHO);
+                        $('#desc_producto').html(response.data.Capacho.PROD_DESC);
+                        $('#cantidad').html((response.data.Capacho.CANTIDAD > 0) ? response.data.Capacho.CANTIDAD : 'LLENO');
+                        //$('#fase_destino').html(response.data.Capacho.DESC_FASES);
+                        completarTablaPosiciones(response.data.Capacho.POSICIONES);
                         $('#btnAccion').show();
                     }else{
                         $('#textError').html(response.message).show();
@@ -204,10 +220,16 @@
 
         } //buscarCapachos
 
-        const ejecutarActividad  = async () => {
+        const ejecutarActividad = async (id_posicion, txtAccion, posicion) => {
+            if (confirm("¿Deseas ejecutar la acción "+ txtAccion +" en posición "+posicion+"?")) {
+
+            } else {
+                return;
+            }
             const formData = new FormData();
 
             formData.append("id_capacho", $('#id_capacho').val());
+            formData.append("id_posicion", id_posicion);
             formData.append("accion", Accion);
 
             formData.append("_token",'{{ csrf_token() }}');
@@ -223,7 +245,6 @@
                 processData: false,  // tell jQuery not to process the data
                 contentType: false,
                 beforeSend: function() {
-
                     //$('#cartelAsociando').show();
                 },
                 success: function(response) {
@@ -246,6 +267,28 @@
             });
 
         } //buscarCapachos
+
+        const completarTablaPosiciones = (Posiciones) => {
+            let html =  '';
+
+            $.each(Posiciones, function(index, pos) {
+                if((Accion == 2) && (pos.ID_ESTADO_ACTUAL == 10)){
+                    html += `<tr>
+                                <td> <button type="button" style="background-color:lightgreen ; border-radius:5px"  onclick="ejecutarActividad(${pos.ID_POSICION},'LLENAR','${pos.POSICION}')">LLENAR ${pos.POSICION}</button></td>
+                            </tr>`;
+                }else if((Accion == 3) && (pos.ID_ESTADO_ACTUAL == 20)){
+                    html += `<tr>
+                                <td> <button type="button" style="background-color:lightgreen; border-radius:5px" onclick="ejecutarActividad(${pos.ID_POSICION},'DENUNCIAR','${pos.POSICION}')">DENUNCIAR ${pos.POSICION}</button></td>
+                            </tr>`;
+                }else{
+                    html += `<tr>
+                                <td><strong>${pos.POSICION}</strong></td>
+                            </tr>`;
+                }
+            });
+
+             $('#tablaPosiciones tbody').html(html);
+        }//completarTablaPosiciones
 
         const iniciarScanner = () => {
             $('#readerContainer').html('<div  id="reader"></div>');
