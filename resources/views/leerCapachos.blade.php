@@ -272,7 +272,7 @@
             let html =  '';
 
             $.each(Posiciones, function(index, pos) {
-                if((Accion == 2) && (pos.ID_ESTADO_ACTUAL == 10)){
+                if((Accion == 2) && (pos.ID_ESTADO_ACTUAL == 15)){
                     html += `<tr>
                                 <td> <button type="button" style="background-color:lightgreen ; border-radius:5px"  onclick="ejecutarActividad(${pos.ID_POSICION},'LLENAR','${pos.POSICION}')">LLENAR ${pos.POSICION}</button></td>
                             </tr>`;
