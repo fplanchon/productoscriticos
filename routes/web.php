@@ -3,6 +3,7 @@
 use App\Http\Controllers\AsociarController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CapachosController;
+use App\Http\Controllers\LlamadosAsistenciaController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -27,3 +28,7 @@ Route::post('/buscarfasesusuario',[AsociarController::class,'buscarFasesUsuario'
 
 Route::post('/ejecutarActividad',[CapachosController::class,'ejecutarActividad'])->name('ejecutarActividad');
 Route::post('/obtenerCapachoQr',[CapachosController::class,'obtenerCapachoQr'])->name('obtenerCapachoQr');
+
+Route::get('/leerllamadosasistencia',[LlamadosAsistenciaController::class,'leerLlamadosAsistencia'])->name('leerLlamadosAsistencia');
+Route::post('/obtenerInfoLlamado',[LlamadosAsistenciaController::class,'obtenerInfoLlamado'])->name('obtenerInfoLlamado');
+Route::post('/realizarLlamadoAsistencia',[LlamadosAsistenciaController::class,'realizarLlamadoAsistencia'])->name('realizarLlamadoAsistencia');

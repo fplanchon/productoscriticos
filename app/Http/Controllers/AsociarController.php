@@ -85,6 +85,10 @@ class AsociarController extends Controller
             return redirect()->route('leerCapacho');
         }
 
+        if($id_hc == 'LLAMADOS'){
+            return redirect()->route('leerLlamadosAsistencia');
+        }
+
         return redirect()->route('formularioAsociar');
     }//loginauto
 
