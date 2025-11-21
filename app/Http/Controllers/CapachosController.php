@@ -202,7 +202,13 @@ class CapachosController extends Controller
                     f.desc_fases as FASE_DESTINO,
                     acti.fecha_hora_alta AS FECHA_ACTIVIDAD,
                     coalesce( acti.ESTADO_CAPACHO, 'INICIAL VACIO') as ESTADO_CAPACHO,
-                    coalesce(acti.ID_ESTADO_ACTUAL, 10) as ID_ESTADO_ACTUAL
+                    coalesce(acti.ID_ESTADO_ACTUAL, 10) as ID_ESTADO_ACTUAL,
+                    RIGHT('00' || EXTRACT(DAY FROM acti.FECHA_HORA_ALTA), 2) || '/' ||
+                      RIGHT('00' || EXTRACT(MONTH FROM acti.FECHA_HORA_ALTA), 2) || '/' ||
+                      EXTRACT(YEAR FROM acti.FECHA_HORA_ALTA) || ' ' ||
+                      RIGHT('00' || EXTRACT(HOUR FROM acti.FECHA_HORA_ALTA), 2) || ':' ||
+                      RIGHT('00' || EXTRACT(MINUTE FROM acti.FECHA_HORA_ALTA), 2) 
+                     AS FECHA_HORA_ESTADO_CASTEADA
                 from CAPACHOS_POSICIONES  cp
                     inner join fases_de_produc f on cp.id_fase = f.id_fase
                     LEFT JOIN (

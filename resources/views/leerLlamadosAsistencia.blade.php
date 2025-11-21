@@ -135,9 +135,19 @@
                         $('#fecha_solicitud_display').html(data.FECHA_SOLICITUD);
                         $('#nro_solicitud_display').html(data.NRO_SOLICITUD);
 
-                        // Confirmar
-                        if (confirm("¿Desea enviar " + data.OBS_LLAMADOS + " a " + data.FASE_DESTINO_DESC + "?")) {
-                            realizarLlamadoAsistencia(id_llamado);
+                        // Confirmar y pedir NRO UNIDAD
+                        let nro_unidad = prompt("¿Desea enviar " + data.OBS_LLAMADOS + " a " + data.FASE_DESTINO_DESC + "? NRO UNIDAD", "");
+                        if (nro_unidad !== null) {
+                            if (/^[0-9]+$/.test(nro_unidad)) {
+                                let nro_unidad_parsed = parseInt(nro_unidad);
+                                if (!isNaN(nro_unidad_parsed) && Number.isInteger(nro_unidad_parsed) ) {
+                                    realizarLlamadoAsistencia(id_llamado, nro_unidad_parsed);
+                                } else {
+                                    $('#textError').html('NRO UNIDAD debe ser un número entero válido.').show();
+                                }
+                            } else {
+                                $('#textError').html('NRO UNIDAD no debe contener caracteres como letras /, *, -, +.').show();
+                            }
                         }
                     }else{
                         $('#textError').html(response.message).show();
@@ -153,10 +163,11 @@
             });
         } //obtenerInfoLlamado
 
-        const realizarLlamadoAsistencia = (id_llamado) => {
+        const realizarLlamadoAsistencia = (id_llamado, nro_unidad) => {
             const formData = new FormData();
 
             formData.append("id_llamado", id_llamado);
+            formData.append("nro_unidad", nro_unidad);
             formData.append("_token",'{{ csrf_token() }}');
 
             $.ajax({

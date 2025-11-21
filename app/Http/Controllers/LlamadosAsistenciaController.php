@@ -51,12 +51,13 @@ class LlamadosAsistenciaController extends Controller
 
     public function realizarLlamadoAsistencia(Request $request){
         $id_llamado = $request->input('id_llamado');
+        $nro_unidad = $request->input('nro_unidad');
         $id_usuario = session('id_usuario');
-
         try {
-            $result = DB::select("execute procedure LLAMADOSNUEVAACTIVIDAD(:ID_USUARIO_ACTI, :ID_LLAMADO)", [
+            $result = DB::select("execute procedure LLAMADOSNUEVAACTIVIDAD(:ID_USUARIO_ACTI, :ID_LLAMADO, :NRO_UNIDAD)", [
                 'ID_USUARIO_ACTI' => $id_usuario,
-                'ID_LLAMADO' => $id_llamado
+                'ID_LLAMADO' => $id_llamado,
+                'NRO_UNIDAD' => $nro_unidad
             ]);
 
             if (!empty($result) && $result[0]->RESULTADO == 'OK') {

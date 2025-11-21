@@ -282,7 +282,7 @@
                             </tr>`;
                 }else{
                     html += `<tr>
-                                <td><strong>${pos.POSICION}</strong></td>
+                                <td><strong>${pos.POSICION} - ${pos.ESTADO_CAPACHO} el ${pos.FECHA_HORA_ESTADO_CASTEADA}</strong></td>
                             </tr>`;
                 }
             });
