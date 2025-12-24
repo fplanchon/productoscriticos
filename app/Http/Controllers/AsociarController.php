@@ -82,7 +82,10 @@ class AsociarController extends Controller
         session(['accion' => $accion]);
 
         if($id_hc == 'CAPACHOS'){
-            return redirect()->route('leerCapacho');
+            if($accion == 4){
+                return redirect()->route('avanzaCapacho');
+            }
+            return redirect()->route('verTrazabilidad');
         }
 
         if($id_hc == 'LLAMADOS'){
