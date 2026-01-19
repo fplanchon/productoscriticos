@@ -50,14 +50,24 @@ class CapachosController extends Controller
 
     public function obtenerCapachoQr(Request $request){
         $id_capacho = $request->input('id_capacho');
-        $accion = $request->input('accion');
+        $id_usuario = session('id_usuario');
 
         $Capacho = self::obtenerCapachoPorId($id_capacho);
         $this->customUtf8Encode($Capacho);
-
         $Capacho = $Capacho[0];
-        $id_fase_usuario = session('id_fase');
-        $Capacho->POSICIONES = self::buscarPosicionesCapacho($Capacho->ID_CAPACHO, $id_fase_usuario);
+
+        $permisosController = new PermisosController();
+        $tienePermisoCapachoEspecial = $permisosController->tienePermisoCapachoEspecial($id_usuario);
+
+        $id_fase_usuario = null;
+        $filtrar_fase = 1;
+
+        if(empty($tienePermisoCapachoEspecial)){
+            $filtrar_fase = 0;
+            $id_fase_usuario = session('id_fase');
+        }
+
+        $Capacho->POSICIONES = self::buscarPosicionesCapacho($Capacho->ID_CAPACHO, $filtrar_fase, $id_fase_usuario);
         $Capacho->IDENTIFICADORES = self::obtenerIdentificadoresCapachoConEstado($Capacho->ID_CAPACHO);
         $this->customUtf8Encode($Capacho->IDENTIFICADORES);
 
@@ -132,7 +142,6 @@ class CapachosController extends Controller
         $id_usuario = session('id_usuario');
         $id_identificador = $request->input('id_identificador');
 
-        //dd($accion, $id_capacho,$id_usuario, $id_posicion , $id_identificador);
         $res = self::ejecutarProcActividad($accion, $id_capacho, $id_usuario, $id_posicion, $id_identificador);
         self::customUtf8Encode($res);
         if($res[0]->ERROR_STR !== ''){
@@ -244,18 +253,19 @@ class CapachosController extends Controller
         );
     }//buscarPosicionesCapachoLegacy
 
- public function buscarPosicionesCapacho($id_capacho, $id_fase_usuario){
-        return DB::connection()->select(
+ public function buscarPosicionesCapacho($id_capacho, $filtrar_fase = 1, $id_fase_usuario = null){
+
+ return DB::connection()->select(
             "select cp.ID_POSICION, cp.ID_CAPACHO, cp.ID_FASE, cp.POSICION, cp.FECHA_ALTA, cp.ID_USUARIO_ALTA, cp.ACTIVO,
                     f.desc_fases as FASE_DESTINO
                 from CAPACHOS_POSICIONES  cp
                     inner join fases_de_produc f on cp.id_fase = f.id_fase
                 WHERE cp.ACTIVO = 1
                     and cp.ID_CAPACHO = :id_capacho
-                    and cp.ID_FASE = :id_fase_usuario
+                    and ((:filtrar_fase = 1) OR (cp.ID_FASE = :id_fase_usuario))
 
                 order by cp.fecha_alta desc ",
-            ['id_capacho'=> $id_capacho, 'id_fase_usuario' => $id_fase_usuario]
+            ['id_capacho'=> $id_capacho, 'filtrar_fase' => $filtrar_fase, 'id_fase_usuario' => $id_fase_usuario]
         );
     }//buscarPosicionesCapacho
 
@@ -381,7 +391,7 @@ class CapachosController extends Controller
         try {
             // Obtener el último ciclo del identificador
             $ultimoCiclo = self::obtenerUltimoCiclo($id_identificador);
-            
+
             if(!$ultimoCiclo){
                 return response()->json([
                     'success' => false,
@@ -422,7 +432,7 @@ class CapachosController extends Controller
             "SELECT FIRST 1 ca.ID_CICLO, ci.NUMERO AS NUMERO_ID
              FROM CAPACHOS_ACTIVIDAD ca
              INNER JOIN CAPACHOS_IDENTIFICADOR ci ON ca.ID_IDENTIFICADOR = ci.ID_IDENTIFICADOR
-             WHERE ca.ACTIVO = 1 
+             WHERE ca.ACTIVO = 1
                AND ca.ID_IDENTIFICADOR = :ID_IDENTIFICADOR
              ORDER BY ca.ID_CICLO DESC",
             [
@@ -440,7 +450,7 @@ class CapachosController extends Controller
     {
         // Obtener todos los estados del recorrido con sus actividades (si existen)
         return DB::connection()->select(
-            "SELECT 
+            "SELECT
                 act.ID_ACTIVIDAD,
                 act.ID_CAPACHO,
                 cp.NRO_CAPACHO,
@@ -454,7 +464,7 @@ class CapachosController extends Controller
             FROM CAPACHOS cp
             INNER JOIN CAPACHOS_RECORRIDOS_DETALLE crd ON crd.ID_RECORRIDO = cp.ID_RECORRIDO
             INNER JOIN CAPACHOS_ESTADOS e ON crd.ID_ESTADO = e.ID_ESTADO_CAPACHO
-            LEFT JOIN CAPACHOS_ACTIVIDAD act ON act.ID_CICLO = ? 
+            LEFT JOIN CAPACHOS_ACTIVIDAD act ON act.ID_CICLO = ?
                                              AND act.ID_ESTADO_ACTUAL = crd.ID_ESTADO
             LEFT JOIN CAPACHOS_IDENTIFICADOR ci ON act.ID_IDENTIFICADOR = ci.ID_IDENTIFICADOR
             LEFT JOIN PERMISOS usr ON act.ID_USUARIO = usr.IDUSUARIO
