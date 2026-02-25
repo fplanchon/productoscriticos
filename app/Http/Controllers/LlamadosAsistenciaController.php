@@ -7,12 +7,17 @@ use Illuminate\Support\Facades\DB;
 
 class LlamadosAsistenciaController extends Controller
 {
-    public function leerLlamadosAsistencia(Request $request){
+    public function leerLlamadosAsistencia(Request $request, $accion = 1){
         if(!$request->session()->has('id_usuario') OR !$request->session()->has('id_fase')){
             return redirect()->route('login');
         }
 
-        return view('leerLlamadosAsistencia');
+        $accion = intval($accion);
+        if($accion != 2){
+            $accion = 1;
+        }
+
+        return view('leerLlamadosAsistencia', compact('accion'));
     }//leerLlamadosAsistencia
 
     public function obtenerInfoLlamado(Request $request){
@@ -52,12 +57,20 @@ class LlamadosAsistenciaController extends Controller
     public function realizarLlamadoAsistencia(Request $request){
         $id_llamado = $request->input('id_llamado');
         $nro_unidad = $request->input('nro_unidad');
+        $accion = $request->input('accion', 1);
         $id_usuario = session('id_usuario');
+
+        $accion = intval($accion);
+        if($accion != 2){
+            $accion = 1;
+        }
+
         try {
-            $result = DB::select("execute procedure LLAMADOSNUEVAACTIVIDAD(:ID_USUARIO_ACTI, :ID_LLAMADO, :NRO_UNIDAD)", [
+            $result = DB::select("execute procedure LLAMADOSNUEVAACTIVIDAD(:ID_USUARIO_ACTI, :ID_LLAMADO, :NRO_UNIDAD, :ACCION)", [
                 'ID_USUARIO_ACTI' => $id_usuario,
                 'ID_LLAMADO' => $id_llamado,
-                'NRO_UNIDAD' => $nro_unidad
+                'NRO_UNIDAD' => $nro_unidad,
+                'ACCION' => $accion
             ]);
 
             if (!empty($result) && $result[0]->RESULTADO == 'OK') {
@@ -71,7 +84,7 @@ class LlamadosAsistenciaController extends Controller
         }
     }//realizarLlamadoAsistencia
 
-        private function customUtf8Encode(&$Data){
+    private function customUtf8Encode(&$Data){
         if(!empty($Data)){
             array_walk_recursive($Data, function(&$value, $key){
                 foreach($value as $k => $val){

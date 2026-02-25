@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title>Leer QR Llamados de Asistencia</title>
+        <title>{{ $accion == 2 ? 'Marcar Llamado como Atendido' : 'Leer QR Llamados de Asistencia' }}</title>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -33,8 +33,8 @@
             <div class="row">
                 <div class="col-12 ">
 
-                    <div class="alert alert-info" role="alert">
-                        <h5 class="text-center">Leer QR de Llamados de Asistencia <i class="bi bi-qr-code me-2"></i></h5>
+                    <div class="alert {{ $accion == 2 ? 'alert-success' : 'alert-info' }}" role="alert">
+                        <h5 class="text-center">{{ $accion == 2 ? 'Marcar Llamado como Atendido' : 'Leer QR de Llamados de Asistencia' }} <i class="bi bi-qr-code me-2"></i></h5>
                     </div>
 
                 </div>
@@ -66,6 +66,7 @@
         </div>
 
         <script>
+        const accion = {{ $accion }};
         let qrObj;
         document.addEventListener('DOMContentLoaded', function() {
             iniciarScanner();
@@ -136,7 +137,14 @@
                         $('#nro_solicitud_display').html(data.NRO_SOLICITUD);
 
                         // Confirmar y pedir NRO UNIDAD
-                        let nro_unidad = prompt("¿Desea enviar " + data.OBS_LLAMADOS + " a " + data.FASE_DESTINO_DESC + "? NRO UNIDAD", "");
+                        let mensajeConfirmacion;
+                        if (accion == 2) {
+                            mensajeConfirmacion = "¿Desea marcar como atendido el llamado '" + data.OBS_LLAMADOS + "'? Ingrese NRO UNIDAD:";
+                        } else {
+                            mensajeConfirmacion = "¿Desea enviar " + data.OBS_LLAMADOS + " a " + data.FASE_DESTINO_DESC + "? NRO UNIDAD";
+                        }
+
+                        let nro_unidad = prompt(mensajeConfirmacion, "");
                         if (nro_unidad !== null) {
                             if (/^[0-9]+$/.test(nro_unidad)) {
                                 let nro_unidad_parsed = parseInt(nro_unidad);
@@ -168,6 +176,7 @@
 
             formData.append("id_llamado", id_llamado);
             formData.append("nro_unidad", nro_unidad);
+            formData.append("accion", accion);
             formData.append("_token",'{{ csrf_token() }}');
 
             $.ajax({
@@ -182,8 +191,9 @@
                 success: function(response) {
                     console.log('response', response);
                     if(response.success){
-                        $('#textSuccess').html('Llamado de asistencia realizado exitosamente.').show();
-                        alert('Llamado de asistencia realizado exitosamente.');
+                        let mensajeExito = accion == 2 ? 'Llamado marcado como atendido exitosamente.' : 'Llamado de asistencia realizado exitosamente.';
+                        $('#textSuccess').html(mensajeExito).show();
+                        alert(mensajeExito);
                         setTimeout(function() {
                             location.reload();
                         }, 1000);

@@ -33,6 +33,6 @@ Route::post('/obtenerCapachoQr',[CapachosController::class,'obtenerCapachoQr'])-
 Route::post('/avanzarCapachoHastaLleno',[CapachosController::class,'avanzarCapachoHastaLleno'])->name('avanzarCapachoHastaLleno');
 Route::post('/obtenerTrazabilidadCapacho',[CapachosController::class,'obtenerTrazabilidadCapacho'])->name('obtenerTrazabilidadCapacho');
 
-Route::get('/leerllamadosasistencia',[LlamadosAsistenciaController::class,'leerLlamadosAsistencia'])->name('leerLlamadosAsistencia');
+Route::get('/leerllamadosasistencia/{accion?}',[LlamadosAsistenciaController::class,'leerLlamadosAsistencia'])->name('leerLlamadosAsistencia');
 Route::post('/obtenerInfoLlamado',[LlamadosAsistenciaController::class,'obtenerInfoLlamado'])->name('obtenerInfoLlamado');
 Route::post('/realizarLlamadoAsistencia',[LlamadosAsistenciaController::class,'realizarLlamadoAsistencia'])->name('realizarLlamadoAsistencia');

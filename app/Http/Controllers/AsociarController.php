@@ -89,7 +89,8 @@ class AsociarController extends Controller
         }
 
         if($id_hc == 'LLAMADOS'){
-            return redirect()->route('leerLlamadosAsistencia');
+            $accionParam = ($accion == 2) ? 2 : 1;
+            return redirect()->route('leerLlamadosAsistencia', ['accion' => $accionParam]);
         }
 
         return redirect()->route('formularioAsociar');
