@@ -23,6 +23,7 @@ Route::get('/asociar',[AsociarController::class,'formularioAsociar'])->name('for
 
 Route::get('/leercapacho',[CapachosController::class,'leerCapacho'])->name('leerCapacho');
 Route::get('/avanzacapacho',[CapachosController::class,'avanzaCapacho'])->name('avanzaCapacho');
+Route::get('/conciliarcapacho',[CapachosController::class,'conciliarCapacho'])->name('conciliarCapacho');
 Route::get('/vertrazabilidad',[CapachosController::class,'verTrazabilidad'])->name('verTrazabilidad');
 //ajax
 Route::post('/asociarproductocritico',[AsociarController::class,'asociarProductoCritico'])->name('asociarproductocritico');
@@ -30,6 +31,8 @@ Route::post('/buscarfasesusuario',[AsociarController::class,'buscarFasesUsuario'
 
 Route::post('/ejecutarActividad',[CapachosController::class,'ejecutarActividad'])->name('ejecutarActividad');
 Route::post('/obtenerCapachoQr',[CapachosController::class,'obtenerCapachoQr'])->name('obtenerCapachoQr');
+Route::post('/obtenerEstadosConciliacion',[CapachosController::class,'obtenerEstadosConciliacion'])->name('obtenerEstadosConciliacion');
+Route::post('/ejecutarConciliacionCapacho',[CapachosController::class,'ejecutarConciliacionCapacho'])->name('ejecutarConciliacionCapacho');
 Route::post('/avanzarCapachoHastaLleno',[CapachosController::class,'avanzarCapachoHastaLleno'])->name('avanzarCapachoHastaLleno');
 Route::post('/obtenerTrazabilidadCapacho',[CapachosController::class,'obtenerTrazabilidadCapacho'])->name('obtenerTrazabilidadCapacho');
 

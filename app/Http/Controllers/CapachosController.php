@@ -39,6 +39,16 @@ class CapachosController extends Controller
         return view('avanzaCapachos', compact('tituloAccion', 'colorAccion', 'descripcionFase', 'tienePermisoDirectoLleno'));
     }//avanzaCapacho
 
+    public function conciliarCapacho()
+    {
+        $tituloAccion = 'Conciliar Capacho';
+        $colorAccion = 'warning';
+        $id_fase = session('id_fase');
+        $descripcionFase = self::obtenerDescripcionFase($id_fase);
+
+        return view('conciliarCapachos', compact('tituloAccion', 'colorAccion', 'descripcionFase'));
+    }//conciliarCapacho
+
     public function verTrazabilidad()
     {
         $tituloAccion = 'Trazabilidad de Capacho';
@@ -361,6 +371,181 @@ class CapachosController extends Controller
             ]
         );
     }//avanzarCapachoHastaLlenoProc
+
+    public function obtenerEstadosConciliacion(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'id_capacho' => 'required|integer',
+            'id_identificador' => 'required|integer',
+        ],[
+            'id_capacho.required' => 'ID Capacho es obligatorio.',
+            'id_capacho.integer' => 'ID Capacho debe ser entero.',
+            'id_identificador.required' => 'Identificador es obligatorio.',
+            'id_identificador.integer' => 'Identificador debe ser entero.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => $validator->errors(),
+                'data' => null,
+            ]);
+        }
+
+        $id_capacho = intval($request->input('id_capacho'));
+        $id_identificador = intval($request->input('id_identificador'));
+
+        $estados = $this->obtenerEstadosPosiblesConciliacion($id_capacho);
+        $estadoActual = $this->obtenerEstadoActualIdentificador($id_identificador);
+        $idEstadoActual = !empty($estadoActual) ? intval($estadoActual->ID_ESTADO_ACTUAL) : 10;
+
+        foreach ($estados as $estado) {
+            $estado->ES_ESTADO_ACTUAL = (intval($estado->ID_ESTADO) === $idEstadoActual) ? 1 : 0;
+        }
+
+        $this->customUtf8Encode($estados);
+
+        return response()->json([
+            'success' => true,
+            'message' => null,
+            'data' => [
+                'ESTADOS' => $estados,
+                'ID_ESTADO_ACTUAL' => $idEstadoActual,
+            ],
+        ]);
+    }//obtenerEstadosConciliacion
+
+    public function ejecutarConciliacionCapacho(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'id_identificador' => 'required|integer',
+            'id_estado' => 'required|integer',
+            'id_posicion_vacio' => 'nullable|integer',
+        ],[
+            'id_identificador.required' => 'Identificador es obligatorio.',
+            'id_identificador.integer' => 'Identificador debe ser entero.',
+            'id_estado.required' => 'Estado es obligatorio.',
+            'id_estado.integer' => 'Estado debe ser entero.',
+            'id_posicion_vacio.integer' => 'Posición debe ser entero.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => $validator->errors(),
+                'data' => null,
+            ]);
+        }
+
+        $id_identificador = intval($request->input('id_identificador'));
+        $id_estado = intval($request->input('id_estado'));
+        $id_posicion_vacio = intval($request->input('id_posicion_vacio', 0));
+        $id_usuario = intval(session('id_usuario'));
+
+        if ($id_estado === 10 && $id_posicion_vacio <= 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Debe seleccionar una posición para conciliar al estado VACIO.',
+                'data' => null,
+            ]);
+        }
+
+        if ($id_estado !== 10) {
+            $id_posicion_vacio = 0;
+        }
+
+        try {
+            $res = $this->ejecutarConciliacionProc($id_identificador, $id_estado, $id_posicion_vacio, $id_usuario);
+            $this->customUtf8Encode($res);
+
+            if (empty($res)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se obtuvo respuesta del procedimiento CAPACHOS_CONCILIAR.',
+                    'data' => null,
+                ]);
+            }
+
+            if (isset($res[0]->ERROR_STR) && $res[0]->ERROR_STR !== '') {
+                return response()->json([
+                    'success' => false,
+                    'message' => $res[0]->ERROR_STR,
+                    'data' => null,
+                ]);
+            }
+
+            if (empty($res[0]->ID_NUEVA_ACTIVIDAD_SALIDA)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se pudo registrar la conciliación.',
+                    'data' => null,
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Conciliación realizada exitosamente.',
+                'data' => [
+                    'ID_NUEVA_ACTIVIDAD_SALIDA' => $res[0]->ID_NUEVA_ACTIVIDAD_SALIDA,
+                    'ID_IDENTIFICADOR' => $id_identificador,
+                    'ID_ESTADO' => $id_estado,
+                    'ID_POSICION_VACIO' => $id_posicion_vacio,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al conciliar capacho: ' . $e->getMessage(),
+                'data' => null,
+            ]);
+        }
+    }//ejecutarConciliacionCapacho
+
+    private function obtenerEstadosPosiblesConciliacion($id_capacho)
+    {
+        return DB::connection()->select(
+            "SELECT
+                crd.ID_ESTADO,
+                e.ESTADO_CAPACHO,
+                crd.ORDEN
+            FROM CAPACHOS c
+            INNER JOIN CAPACHOS_RECORRIDOS_DETALLE crd ON crd.ID_RECORRIDO = c.ID_RECORRIDO
+            INNER JOIN CAPACHOS_ESTADOS e ON e.ID_ESTADO_CAPACHO = crd.ID_ESTADO
+            WHERE c.ID_CAPACHO = :ID_CAPACHO
+              AND c.ACTIVO = 1
+              AND crd.ACTIVO = 1
+            ORDER BY crd.ORDEN ASC",
+            ['ID_CAPACHO' => $id_capacho]
+        );
+    }//obtenerEstadosPosiblesConciliacion
+
+    private function obtenerEstadoActualIdentificador($id_identificador)
+    {
+        $res = DB::connection()->select(
+            "SELECT FIRST 1
+                COALESCE(a.ID_ESTADO_ACTUAL, 10) AS ID_ESTADO_ACTUAL
+            FROM CAPACHOS_ACTIVIDAD a
+            WHERE a.ID_IDENTIFICADOR = :ID_IDENTIFICADOR
+              AND a.ACTIVO = 1
+            ORDER BY a.ID_ACTIVIDAD DESC",
+            ['ID_IDENTIFICADOR' => $id_identificador]
+        );
+
+        return !empty($res) ? $res[0] : null;
+    }//obtenerEstadoActualIdentificador
+
+    private function ejecutarConciliacionProc($id_identificador, $id_estado, $id_posicion_vacio, $id_usuario)
+    {
+        return DB::connection()->select(
+            'execute procedure CAPACHOS_CONCILIAR(:ID_IDENTIFICADOR, :ID_ESTADO, :ID_POSICION_VACIO, :ID_USUARIO)',
+            [
+                'ID_IDENTIFICADOR' => $id_identificador,
+                'ID_ESTADO' => $id_estado,
+                'ID_POSICION_VACIO' => $id_posicion_vacio,
+                'ID_USUARIO' => $id_usuario,
+            ]
+        );
+    }//ejecutarConciliacionProc
 
     /**
      * Obtiene la trazabilidad de un capacho
