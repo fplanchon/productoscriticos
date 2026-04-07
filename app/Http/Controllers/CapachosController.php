@@ -307,7 +307,8 @@ class CapachosController extends Controller
                                   FROM CAPACHOS_ACTIVIDAD a2
                                  WHERE a2.ID_IDENTIFICADOR = a.ID_IDENTIFICADOR
                                 )
-                        ) acti ON CI.ID_IDENTIFICADOR = acti.ID_IDENTIFICADOR
+                        ) acti ON CI.ID_IDENTIFICADOR = acti.ID_IDENTIFICADOR and ci.activo = 1
+
                 WHERE CI.ID_CAPACHO = :id_capacho
                 ORDER BY NUMERO ASC",
             ['id_capacho' => $id_capacho]
