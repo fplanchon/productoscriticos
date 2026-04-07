@@ -24,6 +24,7 @@ Route::get('/asociar',[AsociarController::class,'formularioAsociar'])->name('for
 Route::get('/leercapacho',[CapachosController::class,'leerCapacho'])->name('leerCapacho');
 Route::get('/avanzacapacho',[CapachosController::class,'avanzaCapacho'])->name('avanzaCapacho');
 Route::get('/conciliarcapacho',[CapachosController::class,'conciliarCapacho'])->name('conciliarCapacho');
+Route::get('/denunciarvacio',[CapachosController::class,'denunciarVacio'])->name('denunciarVacio');
 Route::get('/vertrazabilidad',[CapachosController::class,'verTrazabilidad'])->name('verTrazabilidad');
 //ajax
 Route::post('/asociarproductocritico',[AsociarController::class,'asociarProductoCritico'])->name('asociarproductocritico');

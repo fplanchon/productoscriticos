@@ -88,6 +88,9 @@ class AsociarController extends Controller
             if($accion == 5){
                 return redirect()->route('conciliarCapacho');
             }
+            if($accion == 6){
+                return redirect()->route('denunciarVacio');
+            }
             return redirect()->route('verTrazabilidad');
         }
 

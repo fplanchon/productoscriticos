@@ -129,18 +129,12 @@
             <table class="table table-striped" id="tablaIdentificadores" style="text-align: center; display: none;">
                 <thead>
                     <tr>
-                        <th>Seleccionar Identificador</th>
+                        <th>Paso 2: Seleccionar Identificador para Ver Trazabilidad</th>
                     </tr>
                 </thead>
                 <tbody>
                 </tbody>
             </table>
-
-            <div id="contenedorBotonTrazabilidad" style="display: none;">
-                <button type="button" class="btn btn-success btn-lg w-100" id="btnVerTrazabilidad">
-                    <i class="fas fa-route me-2"></i>Ver Trazabilidad - Identificador #<span id="numeroIdentificador"></span>
-                </button>
-            </div>
 
         </div>
 
@@ -187,8 +181,9 @@
                 $('#textSuccess').html('').hide();
                 $('.spanDatoCapacho').html('');
                 $('#id_capacho').val('');
+                $('#id_identificador_seleccionado').val('');
                 $('#tablaIdentificadores').hide();
-                $('#contenedorBotonTrazabilidad').hide();
+                identificadorActual = null;
 
                 qrObj = JSON.parse(resultadoqr);
 
@@ -202,12 +197,17 @@
                     throw new Error('Datos incompletos en el QR')
                 }
 
+                $('#id_capacho').val(qrObj.id_capacho);
+                $('#nro_capacho').html(qrObj.nro_capacho);
+                $('#desc_producto').html(qrObj.desc_producto);
+                $('#cantidad').html((parseFloat(qrObj.cantidad) > 0) ? qrObj.cantidad : 'LLENO');
+
                 // Determinar si es flujo nuevo (con identificador) o legacy (sin identificador)
                 if (qrObj.hasOwnProperty('identificador') && qrObj.identificador) {
-                    // FLUJO NUEVO: Ya tenemos el identificador en el QR
+                    // FLUJO NUEVO: valida identificador y luego lista TODOS los identificadores
                     procesarFlujoNuevo(qrObj);
                 } else {
-                    // FLUJO LEGACY: Necesitamos listar identificadores
+                    // FLUJO LEGACY: lista identificadores
                     procesarFlujoLegacy(qrObj);
                 }
 
@@ -236,28 +236,15 @@
                 return;
             }
 
-            $('#id_capacho').val(qrObj.id_capacho);
-            $('#nro_capacho').html(qrObj.nro_capacho);
-            $('#desc_producto').html(qrObj.desc_producto);
-            $('#cantidad').html((parseFloat(qrObj.cantidad) > 0) ? qrObj.cantidad : 'LLENO');
-
-            identificadorActual = qrObj.identificador;
-            // Asegurar que tenga NUMERO para los mensajes
-            if (!identificadorActual.NUMERO) {
-                identificadorActual.NUMERO = identificadorActual.numero || identificadorActual.ID_NUMERO || identificadorActual.ID_IDENTIFICADOR;
-            }
-            $('#id_identificador_seleccionado').val(identificadorActual.ID_IDENTIFICADOR);
-
-            // Mostrar botón de trazabilidad
-            mostrarBotonTrazabilidad(identificadorActual.NUMERO);
+            const idPreseleccionado = parseInt(qrObj.identificador.ID_IDENTIFICADOR);
+            buscarCapacho(qrObj.id_capacho, idPreseleccionado);
         } //procesarFlujoNuevo
 
         const procesarFlujoLegacy = (qrObj) => {
-            $('#id_capacho').val(qrObj.id_capacho);
-            buscarCapacho(qrObj.id_capacho);
+            buscarCapacho(qrObj.id_capacho, null);
         } //procesarFlujoLegacy
 
-        const buscarCapacho = (id_capacho) => {
+        const buscarCapacho = (id_capacho, idPreseleccionado = null) => {
             const formData = new FormData();
             formData.append("id_capacho", id_capacho);
             formData.append("accion", 99);
@@ -277,8 +264,8 @@
                         $('#desc_producto').html(capachoData.PROD_DESC);
                         $('#cantidad').html((capachoData.CANTIDAD > 0) ? capachoData.CANTIDAD : 'LLENO');
 
-                        // Mostrar lista de identificadores para que el usuario elija
-                        mostrarIdentificadores(capachoData.IDENTIFICADORES);
+                        // Siempre mostrar lista de identificadores para seleccionar manualmente
+                        mostrarIdentificadores(capachoData.IDENTIFICADORES, idPreseleccionado);
                     }else{
                         $('#textError').html(response.message).show();
                     }
@@ -290,8 +277,9 @@
             });
         } //buscarCapacho
 
-        const mostrarIdentificadores = (identificadores) => {
+        const mostrarIdentificadores = (identificadores, idPreseleccionado = null) => {
             let html = '';
+            let preseleccionadoEncontrado = false;
 
             if (!identificadores || identificadores.length === 0) {
                 $('#textError').html('Este capacho no tiene identificadores disponibles').show();
@@ -299,25 +287,32 @@
             }
 
             $.each(identificadores, function(index, ident) {
-                let colorBtn = 'btn-warning'; // Por defecto amarillo
-                if (parseInt(ident.ID_ESTADO_ACTUAL) === 10) {
-                    colorBtn = 'btn-danger'; // Rojo si VACIO
-                } else if (parseInt(ident.ID_ESTADO_ACTUAL) === 20) {
-                    colorBtn = 'btn-success'; // Verde si LLENO
+                const esPreseleccionado = idPreseleccionado !== null && parseInt(ident.ID_IDENTIFICADOR) === parseInt(idPreseleccionado);
+                const estadoEscapado = JSON.stringify((ident.ESTADO_CAPACHO || '').toString());
+                const colorBtn = esPreseleccionado ? 'btn-success' : 'btn-secondary';
+                const claseExtra = esPreseleccionado ? ' border border-3 border-dark' : '';
+
+                if (esPreseleccionado) {
+                    preseleccionadoEncontrado = true;
                 }
 
                 html += `<tr>
                             <td>
-                                <button type="button" class="btn ${colorBtn}"
-                                    onclick="seleccionarIdentificador(${ident.ID_IDENTIFICADOR}, ${ident.NUMERO}, '${ident.ESTADO_CAPACHO}')">
+                                <button type="button" class="btn ${colorBtn}${claseExtra}"
+                                    onclick='seleccionarIdentificador(${ident.ID_IDENTIFICADOR}, ${ident.NUMERO}, ${estadoEscapado})'>
                                     Identificador #${ident.NUMERO} - ${ident.ESTADO_CAPACHO}
                                 </button>
+                                ${esPreseleccionado ? '<div class="small text-muted mt-1">Identificador detectado en QR</div>' : ''}
                             </td>
                         </tr>`;
             });
 
             $('#tablaIdentificadores tbody').html(html);
             $('#tablaIdentificadores').show();
+
+            if (idPreseleccionado !== null && !preseleccionadoEncontrado) {
+                $('#textError').html('El identificador del QR no existe en el capacho. Seleccione uno de la lista.').show();
+            }
         } //mostrarIdentificadores
 
         const seleccionarIdentificador = (id_identificador, numero, estado) => {
@@ -328,26 +323,12 @@
             };
             $('#id_identificador_seleccionado').val(id_identificador);
 
-            // Ocultar tabla de identificadores
-            $('#tablaIdentificadores').hide();
-
-            // Mostrar botón de trazabilidad
-            mostrarBotonTrazabilidad(numero);
-        } //seleccionarIdentificador
-
-        const mostrarBotonTrazabilidad = (numero) => {
-            $('#numeroIdentificador').text(numero);
-            $('#contenedorBotonTrazabilidad').show();
-        } //mostrarBotonTrazabilidad
-
-        // Event listener para abrir el modal de trazabilidad
-        $(document).on('click', '#btnVerTrazabilidad', function() {
             const nroCapacho = $('#nro_capacho').text();
             $('#modalNroCapacho').text(nroCapacho);
 
             modalTrazabilidad.show();
             cargarTrazabilidad();
-        });
+        } //seleccionarIdentificador
 
         const cargarTrazabilidad = () => {
             const id_capacho = $('#id_capacho').val();

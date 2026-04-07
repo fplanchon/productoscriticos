@@ -49,6 +49,16 @@ class CapachosController extends Controller
         return view('conciliarCapachos', compact('tituloAccion', 'colorAccion', 'descripcionFase'));
     }//conciliarCapacho
 
+    public function denunciarVacio()
+    {
+        $tituloAccion = 'Denunciar Vacio';
+        $colorAccion = 'danger';
+        $id_fase = session('id_fase');
+        $descripcionFase = self::obtenerDescripcionFase($id_fase);
+
+        return view('denunciarVacio', compact('tituloAccion', 'colorAccion', 'descripcionFase'));
+    }//denunciarVacio
+
     public function verTrazabilidad()
     {
         $tituloAccion = 'Trazabilidad de Capacho';
