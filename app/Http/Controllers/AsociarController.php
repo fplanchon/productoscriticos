@@ -99,6 +99,11 @@ class AsociarController extends Controller
             return redirect()->route('leerLlamadosAsistencia', ['accion' => $accionParam]);
         }
 
+        if($id_hc == 'SOLICITUDMANTENIMIENTO'){
+            $accionParam = $accion;
+            return redirect()->route('solicitudMantenimiento', ['accion' => $accionParam]);
+        }
+
         return redirect()->route('formularioAsociar');
     }//loginauto
 

@@ -4,6 +4,7 @@ use App\Http\Controllers\AsociarController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CapachosController;
 use App\Http\Controllers\LlamadosAsistenciaController;
+use App\Http\Controllers\SolicitudMantenimientoController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -40,3 +41,8 @@ Route::post('/obtenerTrazabilidadCapacho',[CapachosController::class,'obtenerTra
 Route::get('/leerllamadosasistencia/{accion?}',[LlamadosAsistenciaController::class,'leerLlamadosAsistencia'])->name('leerLlamadosAsistencia');
 Route::post('/obtenerInfoLlamado',[LlamadosAsistenciaController::class,'obtenerInfoLlamado'])->name('obtenerInfoLlamado');
 Route::post('/realizarLlamadoAsistencia',[LlamadosAsistenciaController::class,'realizarLlamadoAsistencia'])->name('realizarLlamadoAsistencia');
+
+Route::get('/solicitudmantenimiento/{accion?}',[SolicitudMantenimientoController::class,'solicitudMantenimiento'])->name('solicitudMantenimiento');
+Route::post('/validarInventarioMantenimiento',[SolicitudMantenimientoController::class,'validarInventarioMantenimiento'])->name('validarInventarioMantenimiento');
+Route::post('/obtenerPendientesMantenimiento',[SolicitudMantenimientoController::class,'obtenerPendientesMantenimiento'])->name('obtenerPendientesMantenimiento');
+Route::post('/solicitarReparacionMantenimiento',[SolicitudMantenimientoController::class,'solicitarReparacionMantenimiento'])->name('solicitarReparacionMantenimiento');
