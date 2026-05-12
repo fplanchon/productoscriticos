@@ -104,6 +104,11 @@ class AsociarController extends Controller
             return redirect()->route('solicitudMantenimiento', ['accion' => $accionParam]);
         }
 
+        if($id_hc == 'NESTEORELLENO'){
+            $accionParam = $accion;
+            return redirect()->route('marcarNesteoRelleno', ['accion' => $accionParam]);
+        }
+
         return redirect()->route('formularioAsociar');
     }//loginauto
 

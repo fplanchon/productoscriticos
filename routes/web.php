@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CapachosController;
 use App\Http\Controllers\LlamadosAsistenciaController;
 use App\Http\Controllers\SolicitudMantenimientoController;
+use App\Http\Controllers\NesteoController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -46,3 +47,7 @@ Route::get('/solicitudmantenimiento/{accion?}',[SolicitudMantenimientoController
 Route::post('/validarInventarioMantenimiento',[SolicitudMantenimientoController::class,'validarInventarioMantenimiento'])->name('validarInventarioMantenimiento');
 Route::post('/obtenerPendientesMantenimiento',[SolicitudMantenimientoController::class,'obtenerPendientesMantenimiento'])->name('obtenerPendientesMantenimiento');
 Route::post('/solicitarReparacionMantenimiento',[SolicitudMantenimientoController::class,'solicitarReparacionMantenimiento'])->name('solicitarReparacionMantenimiento');
+
+Route::get('/marcarnesteorelleno/{accion?}',[NesteoController::class,'marcarNesteoRelleno'])->name('marcarNesteoRelleno');
+Route::post('/obtenerEstadoNesteoRelleno',[NesteoController::class,'obtenerEstadoNesteoRelleno'])->name('obtenerEstadoNesteoRelleno');
+Route::post('/actualizarEstadoNesteoRelleno',[NesteoController::class,'actualizarEstadoNesteoRelleno'])->name('actualizarEstadoNesteoRelleno');
