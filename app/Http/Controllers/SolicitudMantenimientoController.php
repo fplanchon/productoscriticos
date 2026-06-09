@@ -16,6 +16,17 @@ class SolicitudMantenimientoController extends Controller
         return view('solicitudMantenimiento', compact('accion'));
     }
 
+    public function leerQrEquipoInventario(Request $request)
+    {
+        if (!$request->session()->has('id_usuario') || !$request->session()->has('id_fase')) {
+            return redirect()->route('login');
+        }
+
+        $sigwebUrl = rtrim((string) config('services.sigweb.url'), '/');
+
+        return view('leerQrEquipoInventario', compact('sigwebUrl'));
+    }
+
     public function validarInventarioMantenimiento(Request $request)
     {
         $idInventario = intval($request->input('id_inventario'));

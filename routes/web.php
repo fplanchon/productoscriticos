@@ -44,6 +44,7 @@ Route::post('/obtenerInfoLlamado',[LlamadosAsistenciaController::class,'obtenerI
 Route::post('/realizarLlamadoAsistencia',[LlamadosAsistenciaController::class,'realizarLlamadoAsistencia'])->name('realizarLlamadoAsistencia');
 
 Route::get('/solicitudmantenimiento/{accion?}',[SolicitudMantenimientoController::class,'solicitudMantenimiento'])->name('solicitudMantenimiento');
+Route::get('/leerqrequipoinventario',[SolicitudMantenimientoController::class,'leerQrEquipoInventario'])->name('leerQrEquipoInventario');
 Route::post('/validarInventarioMantenimiento',[SolicitudMantenimientoController::class,'validarInventarioMantenimiento'])->name('validarInventarioMantenimiento');
 Route::post('/obtenerPendientesMantenimiento',[SolicitudMantenimientoController::class,'obtenerPendientesMantenimiento'])->name('obtenerPendientesMantenimiento');
 Route::post('/solicitarReparacionMantenimiento',[SolicitudMantenimientoController::class,'solicitarReparacionMantenimiento'])->name('solicitarReparacionMantenimiento');

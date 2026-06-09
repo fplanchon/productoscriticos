@@ -196,6 +196,55 @@ Mantener este patron salvo pedido explicito de cambio.
 3. Verificar resultado en JSON (backend) y texto en vista (frontend).
 4. Evitar doble conversion en cadenas ya UTF-8.
 
+### 8.6 Playbook: Nuevo lector QR de pantalla unica
+
+Usar este playbook cuando se deba crear una nueva pantalla individual que lea un QR, valide sus datos y ejecute una accion de negocio.
+
+Secuencia recomendada:
+
+1. Confirmar modulo dueno del flujo y controlador responsable.
+2. Definir la ruta GET de la pantalla y los endpoints POST AJAX necesarios.
+3. Revisar un lector existente similar antes de implementar.
+4. Definir el contrato minimo del QR:
+   - formato esperado
+   - campos obligatorios
+   - diferencia entre QR nuevo y QR legacy si aplica
+5. Implementar o reutilizar el metodo de controller que renderiza la vista.
+6. Implementar los metodos POST con respuesta JSON estandar:
+   - success
+   - message
+   - data
+7. Si hay Firebird/procedure involucrado:
+   - documentar parametros de entrada
+   - documentar salidas esperadas
+   - manejar ERROR_STR o salida vacia si el procedure sigue ese patron
+8. Crear una vista Blade dedicada con flujo explicito por pasos:
+   - inicializacion del scanner
+   - parseo/validacion del QR
+   - llamada AJAX
+   - render de resultado, botones o estados intermedios
+   - reinicio o recarga del flujo al finalizar si corresponde
+9. Mantener validacion manual de sesion y permisos existentes del modulo.
+10. Verificar manualmente el flujo extremo a extremo con un QR valido y uno invalido.
+
+Checklist especifico para nuevos lectores QR:
+
+- Existe una vista Blade exclusiva para el lector.
+- Las rutas GET/POST quedaron registradas en routes/web.php.
+- El frontend valida el QR antes de invocar backend.
+- El backend revalida datos criticos aunque el frontend ya los haya validado.
+- Se mantiene CSRF en AJAX.
+- Se conserva el patron JSON del proyecto.
+- Se contemplan mensajes de error entendibles para el operador.
+- Se documenta el procedure o query asociado si se agrega logica legacy nueva.
+
+Referencias recomendadas dentro del repo:
+
+- resources/views/leerCapachos.blade.php
+- resources/views/avanzaCapachos.blade.php
+- resources/views/leerLlamadosAsistencia.blade.php
+- .github/agents/conciliarcapachos.md
+
 ## 9. Checklist de Validacion antes de cerrar cambios
 
 ### 9.1 Checklist funcional minimo
@@ -226,6 +275,8 @@ Mantener este patron salvo pedido explicito de cambio.
 - resources/views/avanzaCapachos.blade.php
 - resources/views/verTrazabilidad.blade.php
 - resources/views/leerLlamadosAsistencia.blade.php
+- .github/agents/conciliarcapachos.md
+- .github/agents/qr-reader-feature.agent.md
 
 ## 11. Alcance de este documento
 

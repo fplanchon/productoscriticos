@@ -31,4 +31,8 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'sigweb' => [
+        'url' => env('SIGWEB_URL', 'http://192.168.0.108:8001'),
+    ],
+
 ];
