@@ -19,7 +19,7 @@ class SolicitudMantenimientoController extends Controller
     public function leerQrEquipoInventario(Request $request)
     {
         if (!$request->session()->has('id_usuario') || !$request->session()->has('id_fase')) {
-            return redirect()->route('login');
+            //return redirect()->route('login');
         }
 
         $sigwebUrl = rtrim((string) config('services.sigweb.url'), '/');
